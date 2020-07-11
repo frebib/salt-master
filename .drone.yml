@@ -1,0 +1,37 @@
+---
+kind: pipeline
+name: docker
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: always
+  image: spritsail/docker-build
+  settings:
+    repo: frebib/salt-master
+
+- name: publish
+  pull: always
+  image: spritsail/docker-publish
+  settings:
+    repo: frebib/salt-master
+    tags:
+    - latest
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+---
+kind: signature
+hmac: d9da1ad2a8e775fefed4001ab30f21d34dba447ee96653a93d8d49998eed75ec
+
+...
