@@ -20,10 +20,26 @@ steps:
     repo: frebib/salt-master
     tags:
     - latest
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
+    username: {from_secret: docker_username}
+    password: {from_secret: docker_password}
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+---
+kind: pipeline
+name: update-readme
+
+steps:
+- name: dockerhub-readme
+  pull: always
+  image: jlesage/drone-push-readme
+  settings:
+    username: {from_secret: docker_username}
+    password: {from_secret: docker_password}
+    repo: frebib/salt-master
   when:
     branch:
     - master
@@ -32,6 +48,6 @@ steps:
 
 ---
 kind: signature
-hmac: d9da1ad2a8e775fefed4001ab30f21d34dba447ee96653a93d8d49998eed75ec
+hmac: 4fe713a3d6f59866535f7c75e3925c8003debbaa8b9c3ac208fc9a1fda31f9b4
 
 ...
