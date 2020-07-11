@@ -6,6 +6,7 @@ RUN apk --no-cache add \
     && \
     cd "$(python3 -c 'import os, salt; print(os.path.dirname(salt.__path__[0]))')" && \
     wget -O- https://patch-diff.githubusercontent.com/raw/saltstack/salt/pull/57852.patch | patch -p1 && \
+    wget -O- https://github.com/frebib/salt/commit/22902dac1ebe871c285ce56d9613acb231278508.patch | patch -p1 && \
     wget -O- https://github.com/frebib/salt/commit/e5d0ab07eea54226d423c0ac0c6fea120c439800.patch | patch -p1 && \
     wget -O- https://github.com/frebib/salt/commit/7fffc9459488044114c2d4285a79c38c1cafcb87.patch | patch -p1 && \
     true
