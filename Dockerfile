@@ -9,6 +9,7 @@ RUN apk --no-cache add \
     wget -O- https://github.com/frebib/salt/commit/22902dac1ebe871c285ce56d9613acb231278508.patch | patch -p1 && \
     wget -O- https://github.com/frebib/salt/commit/e5d0ab07eea54226d423c0ac0c6fea120c439800.patch | patch -p1 && \
     wget -O- https://github.com/frebib/salt/commit/7fffc9459488044114c2d4285a79c38c1cafcb87.patch | patch -p1 && \
+    wget -O- https://github.com/frebib/salt/commit/ffd8471cb9e9658ebae4b2dc3a951edfe6d6d9ef.patch | patch -p1 && \
     true
 
 ENV CONFIG_DIR=/config \
