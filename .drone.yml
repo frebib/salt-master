@@ -13,6 +13,13 @@ steps:
   settings:
     repo: frebib/salt-master
 
+- name: test
+  pull: always
+  image: spritsail/docker-test
+  settings:
+    run: |
+      salt-master --versions-report
+
 - name: publish
   pull: always
   image: spritsail/docker-publish
@@ -49,6 +56,6 @@ steps:
 
 ---
 kind: signature
-hmac: 1bebb1dad1d32117273e296d396d0c70edfdc51ae0bba8c5b4b612305c473d0d
+hmac: 3ebb146a100834daf9568998b1f81a1ef3a60acba36671ac6c2162315e5a0cab
 
 ...
