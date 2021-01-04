@@ -1,0 +1,67 @@
+From 24e834ad2fa2ebfb2318ce52ba7e0f2cb88622de Mon Sep 17 00:00:00 2001
+From: Joe Groocock <jgroocock@cloudflare.com>
+Date: Wed, 1 Jul 2020 21:17:54 +0100
+Subject: Print jinja line numbers & error context on UndefinedError
+
+This provides both the line number on which the error occurred in the
+Jinja template, and also several lines of context around the error in
+the Jinja template source.
+
+The one caveat to this change is that if paired with jinja2<2.11 it
+could possibly report incorrect line numbers for some errors. This was
+fixed in https://github.com/pallets/jinja/pull/1109
+
+Traces/errors before were vague and ambiguous:
+
+    File "/usr/lib/python2.7/dist-packages/salt/utils/templates.py", line 387, in render_jinja_tmpl
+      buf=tmplstr)
+    SaltRenderError: Jinja variable 'str object' has no attribute 'items'
+
+This gives a line number and multiple lines of context:
+
+    File "/usr/lib/python2.7/dist-packages/salt/utils/templates.py", line 387, in render_jinja_tmpl
+      tmplstr)
+    SaltRenderError: Jinja variable 'str object' has no attribute 'items'; line 5
+
+    ---
+    # {{ salt.pillar.get('managed_by_salt_message', '') }}
+    # salt template: {{ source }}
+
+    {%- for section in sections %}
+      {%- for name, config in section.items() %}    <======================
+    [{{ name }}]
+        {%- for line in config %}
+    {{ line }}
+        {%- endfor %}
+      {%- endfor %}
+    [...]
+    ---
+
+Signed-off-by: Joe Groocock <jgroocock@cloudflare.com>
+---
+ salt/utils/templates.py | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/salt/utils/templates.py b/salt/utils/templates.py
+index 1fda960b2e..19af074074 100644
+--- a/salt/utils/templates.py
++++ b/salt/utils/templates.py
+@@ -498,11 +498,10 @@ def render_jinja_tmpl(tmplstr, context, tmplpath=None):
+         output = template.render(**decoded_context)
+     except jinja2.exceptions.UndefinedError as exc:
+         trace = traceback.extract_tb(sys.exc_info()[2])
+-        out = _get_jinja_error(trace, context=decoded_context)[1]
+-        tmplstr = ""
+-        # Don't include the line number, since it is misreported
+-        # https://github.com/mitsuhiko/jinja2/issues/276
+-        raise SaltRenderError("Jinja variable {}{}".format(exc, out), buf=tmplstr)
++        line, out = _get_jinja_error(trace, context=decoded_context)
++        if not line:
++            tmplstr = ""
++        raise SaltRenderError("Jinja variable {}{}".format(exc, out), line, tmplstr)
+     except (
+         jinja2.exceptions.TemplateRuntimeError,
+         jinja2.exceptions.TemplateSyntaxError,
+-- 
+2.30.0
+

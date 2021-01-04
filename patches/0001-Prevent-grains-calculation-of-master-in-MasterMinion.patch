@@ -1,0 +1,29 @@
+From 45041be85c508622a838d6ea462b5a22c0ed619b Mon Sep 17 00:00:00 2001
+From: Joe Groocock <me@frebib.net>
+Date: Sat, 11 Jul 2020 17:39:32 +0100
+Subject: Prevent grains calculation of master in MasterMinion
+
+These grains do not appear used and are calculated on the master meaning they are not applicable to the requested minion anyway. They also slow down actions significantly in some cases due the enormous number of commands that run.
+
+Authored-by: Jason Woods <devel@jasonwoods.me.uk>
+Signed-off-by: Joe Groocock <me@frebib.net>
+---
+ salt/minion.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/salt/minion.py b/salt/minion.py
+index c255f37c26..570e44680c 100644
+--- a/salt/minion.py
++++ b/salt/minion.py
+@@ -983,7 +983,7 @@ class MasterMinion:
+         )
+         self.opts.update(opts)
+         self.whitelist = whitelist
+-        self.opts["grains"] = salt.loader.grains(opts)
++        self.opts["grains"] = {}
+         self.opts["pillar"] = {}
+         self.mk_returners = returners
+         self.mk_states = states
+-- 
+2.30.0
+

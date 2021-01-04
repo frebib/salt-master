@@ -1,17 +1,24 @@
 FROM spritsail/alpine:edge
 
+ARG SALT_VERSION=3002.2-r0
+
+LABEL maintainer="frebib <salt-master@frebib.net>" \
+      org.label-schema.vendor="frebib" \
+      org.label-schema.name="SaltStack Salt Master" \
+      org.label-schema.url="https://github.com/saltstack/salt" \
+      org.label-schema.description="Software to automate the management and configuration of any infrastructure or application at scale." \
+      org.label-schema.version=${SALT_VERSION} \
+      io.spritsail.version.salt=${SALT_VERSION}
+
+ADD patches/ /tmp/patches
+
 RUN apk --no-cache add \
-        salt-master \
-        py3-pygit2 \
+        salt-master=${SALT_VERSION} \
     && \
     cd "$(python3 -c 'import os, salt; print(os.path.dirname(salt.__path__[0]))')" && \
-    wget -O- https://patch-diff.githubusercontent.com/raw/saltstack/salt/pull/57852.patch | patch -p1 && \
-    wget -O- https://github.com/frebib/salt/commit/22902dac1ebe871c285ce56d9613acb231278508.patch | patch -p1 && \
-    wget -O- https://github.com/frebib/salt/commit/e5d0ab07eea54226d423c0ac0c6fea120c439800.patch | patch -p1 && \
-    wget -O- https://github.com/frebib/salt/commit/7fffc9459488044114c2d4285a79c38c1cafcb87.patch | patch -p1 && \
-    wget -O- https://github.com/frebib/salt/commit/ffd8471cb9e9658ebae4b2dc3a951edfe6d6d9ef.patch | patch -p1 && \
-    wget -O- https://github.com/frebib/salt/commit/2f8a3e801b76273f6e9e9eaf2822cec26fd9158f.patch | patch -p1 && \
-    true
+    for file in /tmp/patches/*.patch; do \
+        patch -p1 < "$file"; \
+    done
 
 ENV CONFIG_DIR=/config \
     PID_FILE=/dev/null \

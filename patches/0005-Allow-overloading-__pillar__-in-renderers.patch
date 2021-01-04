@@ -1,0 +1,99 @@
+From 4e12130d22d6e4c213227516068d88f5ba411fb3 Mon Sep 17 00:00:00 2001
+From: Joe Groocock <me@frebib.net>
+Date: Sat, 11 Jul 2020 15:34:11 +0100
+Subject: Allow overloading __pillar__ in renderers
+
+Some external pillars may invoke templtes.compile_template or a renderer
+directly and in certain cases the global __pillar__ may need to be
+overridden in certain contexts where the data is different or not yet
+present in __pillar__ so a supplementary pillar is provided instead to
+emulate the same expected behaviour.
+
+Signed-off-by: Joe Groocock <me@frebib.net>
+---
+ salt/renderers/jinja.py | 2 +-
+ salt/renderers/mako.py  | 2 +-
+ salt/renderers/py.py    | 6 ++++--
+ salt/renderers/pydsl.py | 2 +-
+ salt/renderers/wempy.py | 2 +-
+ 5 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/salt/renderers/jinja.py b/salt/renderers/jinja.py
+index 74e929abf1..224078887a 100644
+--- a/salt/renderers/jinja.py
++++ b/salt/renderers/jinja.py
+@@ -69,7 +69,7 @@ def render(
+         salt=_split_module_dicts(),
+         grains=__grains__,
+         opts=__opts__,
+-        pillar=__pillar__,
++        pillar=kws.pop("pillar", __pillar__),
+         saltenv=saltenv,
+         sls=sls,
+         context=context,
+diff --git a/salt/renderers/mako.py b/salt/renderers/mako.py
+index e5bcf8862b..1ad8648142 100644
+--- a/salt/renderers/mako.py
++++ b/salt/renderers/mako.py
+@@ -26,7 +26,7 @@ def render(template_file, saltenv="base", sls="", context=None, tmplpath=None, *
+         salt=__salt__,
+         grains=__grains__,
+         opts=__opts__,
+-        pillar=__pillar__,
++        pillar=kws.pop("pillar", __pillar__),
+         saltenv=saltenv,
+         sls=sls,
+         context=context,
+diff --git a/salt/renderers/py.py b/salt/renderers/py.py
+index 34f6fdf6e4..3f560d1c96 100644
+--- a/salt/renderers/py.py
++++ b/salt/renderers/py.py
+@@ -131,6 +131,8 @@ def render(template, saltenv="base", sls="", tmplpath=None, **kws):
+     if not os.path.isfile(template):
+         raise SaltRenderError("Template {0} is not a file!".format(template))
+ 
++    pillar = kws.pop("pillar", __pillar__),
++
+     tmp_data = salt.utils.templates.py(
+         template,
+         True,
+@@ -140,8 +142,8 @@ def render(template, saltenv="base", sls="", tmplpath=None, **kws):
+         grains=__grains__,
+         __opts__=__opts__,
+         opts=__opts__,
+-        __pillar__=__pillar__,
+-        pillar=__pillar__,
++        __pillar__=pillar,
++        pillar=pillar,
+         __env__=saltenv,
+         saltenv=saltenv,
+         __sls__=sls,
+diff --git a/salt/renderers/pydsl.py b/salt/renderers/pydsl.py
+index b6997dedb2..99eeaf0503 100644
+--- a/salt/renderers/pydsl.py
++++ b/salt/renderers/pydsl.py
+@@ -369,7 +369,7 @@ def render(template, saltenv="base", sls="", tmplpath=None, rendered_sls=None, *
+         __salt__=__salt__,
+         __grains__=__grains__,
+         __opts__=__opts__,
+-        __pillar__=__pillar__,
++        __pillar__=kws.pop("pillar", __pillar__),
+         __env__=saltenv,
+         __sls__=sls,
+         __file__=tmplpath,
+diff --git a/salt/renderers/wempy.py b/salt/renderers/wempy.py
+index d5b59e4745..fa1cd4e37d 100644
+--- a/salt/renderers/wempy.py
++++ b/salt/renderers/wempy.py
+@@ -22,7 +22,7 @@ def render(template_file, saltenv="base", sls="", argline="", context=None, **kw
+         salt=__salt__,
+         grains=__grains__,
+         opts=__opts__,
+-        pillar=__pillar__,
++        pillar=kws.pop("pillar", __pillar__),
+         saltenv=saltenv,
+         sls=sls,
+         context=context,
+-- 
+2.30.0
+
