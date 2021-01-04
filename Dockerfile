@@ -15,6 +15,8 @@ ADD patches/ /tmp/patches
 RUN apk --no-cache add \
         salt-master=${SALT_VERSION} \
     && \
+    # Munge requests idna dependency: https://github.com/psf/requests/issues/5710
+    sed -i 's/idna<3,/idna<=3,/g' /usr/lib/python3.8/site-packages/requests-2.25.1-py3.8.egg-info/requires.txt && \
     cd "$(python3 -c 'import os, salt; print(os.path.dirname(salt.__path__[0]))')" && \
     for file in /tmp/patches/*.patch; do \
         patch -p1 < "$file"; \
